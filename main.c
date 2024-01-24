@@ -1,52 +1,46 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-typedef struct c16_t{
-  int16_t r;
-  int16_t i;
-} c16_t;
-
-int16_t QPSK[] = {3, 2, 1, 0};
-int16_t QAM16[] = {15, 14, 10, 11,
-                   13, 12,  8,  9,
-                    5,  4,  0,  1,
-                    7,  6,  2,  3};
-int16_t QAM64[] = {63, 62, 58, 59, 43, 42, 46, 47,
-                   61, 60, 56, 57, 41, 40, 44, 45,
-                   53, 52, 48, 49, 33, 32, 36, 37,
-                   55, 54, 50, 51, 35, 34, 38, 39,
-                   23, 22, 18, 19,  3,  2,  6,  7,
-                   21, 20, 16, 17,  1,  0,  4,  5,
-                   29, 28, 24, 25,  9,  8, 12, 13,
-                   31, 30, 26, 27, 13, 12, 14, 15};
-
-// void print_matrix_int16 (int m, int n, int16_t A[m][n]) {
-//   for (int8_t i = 0; i < m; i++) {
-//     printf("[ ");
-//     for (int8_t j = 0; j < n; j++)
-//       printf("%6d, ", A[i][j]);
-//     printf("];\n");
-//   }
-// }
-
-// void print_matrix_int32 (int m, int n, int32_t A[m][n]) {
-//   for (int8_t i = 0; i < m; i++) {
-//     printf("[ ");
-//     for (int8_t j = 0; j < n; j++)
-//       printf("%6d, ", A[i][j]);
-//     printf("];\n");
-//   }
-// }
 
 #define SQRT2  362
 #define SQRT10 810
 #define SQRT42 1659
+
+typedef struct c16_t{
+  int16_t r;
+  int16_t i;
+} c16_t;
 
 int8_t xRange[3][8] = {
   {-1,  1,  0,  0, 0, 0, 0, 0},
   {-3, -1,  1,  3, 0, 0, 0, 0},
   {-7, -5, -3, -1, 1, 3, 5, 7},
 };
+
+int16_t QPSK[4] = {3, 2, 1, 0};
+
+int16_t QAM16[16] = {15, 14, 10, 11,
+                     13, 12,  8,  9,
+                      5,  4,  0,  1,
+                      7,  6,  2,  3};
+
+int16_t QAM64[64] = {63, 62, 58, 59, 43, 42, 46, 47,
+                     61, 60, 56, 57, 41, 40, 44, 45,
+                     53, 52, 48, 49, 33, 32, 36, 37,
+                     55, 54, 50, 51, 35, 34, 38, 39,
+                     23, 22, 18, 19,  3,  2,  6,  7,
+                     21, 20, 16, 17,  1,  0,  4,  5,
+                     29, 28, 24, 25,  9,  8, 12, 13,
+                     31, 30, 26, 27, 13, 12, 14, 15};
+
+void print_matrix_int16 (int m, int n, int16_t A[m][n]) {
+  for (int8_t i = 0; i < m; i++) {
+    printf("[ ");
+    for (int8_t j = 0; j < n; j++)
+      printf("%6d, ", A[i][j]);
+    printf("];\n");
+  }
+}
 
 int32_t mul_scale (int32_t a, int32_t b) {
   return (a * b) >> 8;
@@ -204,60 +198,60 @@ int map_iq_to_qam_idx (int8_t xRangeLen, int8_t *range, int amplitude, int phase
 
 void my_SDA_kbest (int numLayer,
                    int numAnt,
-                   c16_t ch0,
-                   c16_t ch1,
-                   c16_t ch2,
-                   c16_t ch3,
+                   c16_t *ch,
                    c16_t *data_in,
                    int order,
-                   int k_best) {
+                   int k_best) 
+{
   for (int i = 0; i < 2 && order == 6; i++) {
     data_in[i].r /= 12;
     data_in[i].i /= 12;
   }
-    
+  c16_t ch0 = ch[0];
+  c16_t ch1 = ch[1];
+  c16_t ch2 = ch[2];
+  c16_t ch3 = ch[3];
   // ZF H^-1 * y
-  c16_t y_zf[2] = {0};
-  c16_t tmp_ch = {0};
-  c16_t zf0 = cmplx_mul(ch3, data_in[0]);
-  tmp_ch.r = -ch1.r;
-  tmp_ch.i = -ch1.i;
-  c16_t zf1 = cmplx_mul(tmp_ch, data_in[1]);
-  tmp_ch.r = -ch2.r;
-  tmp_ch.i = -ch2.i;
-  c16_t zf2 = cmplx_mul(tmp_ch, data_in[0]);
-  c16_t zf3 = cmplx_mul(ch0, data_in[1]);
-  
-  y_zf[0] = cmplx_add(zf0, zf1);
-  y_zf[1] = cmplx_add(zf2, zf3);
+  // c16_t y_zf[2] = {0};
+  // c16_t tmp_ch = {0};
+  // c16_t zf0 = cmplx_mul(ch3, data_in[0]);
+  // tmp_ch.r = -ch1.r;
+  // tmp_ch.i = -ch1.i;
+  // c16_t zf1 = cmplx_mul(tmp_ch, data_in[1]);
+  // tmp_ch.r = -ch2.r;
+  // tmp_ch.i = -ch2.i;
+  // c16_t zf2 = cmplx_mul(tmp_ch, data_in[0]);
+  // c16_t zf3 = cmplx_mul(ch0, data_in[1]);
+  // y_zf[0] = cmplx_add(zf0, zf1);
+  // y_zf[1] = cmplx_add(zf2, zf3);
 
-  c16_t data_yzf_0 = cmplx_sub(data_in[0], y_zf[0]);
-  c16_t data_yzf_1 = cmplx_sub(data_in[1], y_zf[1]);
+  // c16_t data_yzf_0 = cmplx_sub(data_in[0], y_zf[0]);
+  // c16_t data_yzf_1 = cmplx_sub(data_in[1], y_zf[1]);
 
   switch (order) {
     case 2:
-      data_yzf_0 = cmplx_scale(data_yzf_0, SQRT2);
-      data_yzf_1 = cmplx_scale(data_yzf_1, SQRT2);
+      // data_yzf_0 = cmplx_scale(data_yzf_0, SQRT2);
+      // data_yzf_1 = cmplx_scale(data_yzf_1, SQRT2);
       data_in[0] = cmplx_scale(data_in[0], SQRT2);
       data_in[1] = cmplx_scale(data_in[1], SQRT2);
       break;
     case 4:
-      data_yzf_0 = cmplx_scale(data_yzf_0, SQRT10);
-      data_yzf_1 = cmplx_scale(data_yzf_1, SQRT10);
+      // data_yzf_0 = cmplx_scale(data_yzf_0, SQRT10);
+      // data_yzf_1 = cmplx_scale(data_yzf_1, SQRT10);
       data_in[0] = cmplx_scale(data_in[0], SQRT10);
       data_in[1] = cmplx_scale(data_in[1], SQRT10);
       break;
     case 6:
-      data_yzf_0 = cmplx_scale(data_yzf_0, SQRT42);
-      data_yzf_1 = cmplx_scale(data_yzf_1, SQRT42);
+      // data_yzf_0 = cmplx_scale(data_yzf_0, SQRT42);
+      // data_yzf_1 = cmplx_scale(data_yzf_1, SQRT42);
       data_in[0] = cmplx_scale(data_in[0], SQRT42);
       data_in[1] = cmplx_scale(data_in[1], SQRT42);
       break;
     default:
       printf("Modulation order %d is not support.\n", order);
   }
-  int16_t raduis = raduis_norm(data_yzf_0, data_yzf_1);
-  
+  // int32_t raduis = raduis_norm(data_yzf_0, data_yzf_1);
+
   int16_t H[4][4] = {{ch0.r, ch1.r, -ch0.i, -ch1.i}, 
                      {ch2.r, ch3.r, -ch2.i, -ch3.i}, 
                      {ch0.i, ch1.i,  ch0.r,  ch1.r}, 
@@ -272,7 +266,7 @@ void my_SDA_kbest (int numLayer,
 
   int16_t level = 0;
   int16_t xHat[4][64] = {0};
-  int32_t dp[64] = {0};      // radius
+  // int32_t dp[64] = {0};      // radius
   int64_t ped[64] = {0};     // add for DP
   int16_t py[4][64] = {0};   // Store Hq * Y -> yR
 
@@ -287,33 +281,36 @@ void my_SDA_kbest (int numLayer,
     for (int j = 0; j < 4; j++) {
       tmp += (int32_t)Hq[j][i] * (int32_t)data_in16[j] / 256;
     }
-    yR[i] = (int16_t)(tmp);
+    yR[i] = (int16_t)tmp;
   }
   
-  for (int i = 0; i < k_size; i++) // init dp
-    dp[i] = raduis;
+  // for (int i = 0; i < k_size; i++) // init dp
+  //   dp[i] = raduis;
 
   for (int i = 0; i < numLayer; i++) // init py
     for (int j = 0; j < k_size; j++)
       py[i][j] = yR[i];
   
-  int dimp = 3, dim = 2;
+  int dimp = numLayer - 1, dim = numLayer - 2;
 
   for (int layers = 0; layers < numLayer; layers++) {
     int k_best_cur = (k_size > k_best) ? k_best : k_size;
 
     int64_t tmp_w[64] = {INT64_MAX};
     for (int k = 0; k < k_size; k++) { // (py - Hr * xHat)^2
-      tmp_w[k] = (int64_t)py[dimp][k] - (int64_t)Hr[dimp][dimp] * xHat[level][k]; 
-      tmp_w[k] = tmp_w[k] * tmp_w[k];
-    }
-
-    int64_t tmp_dp[64] = {INT64_MAX};
-    for (int k = 0; k < k_size; k++) { // ped = radius - tmp_w
-      tmp_dp[k] = (int64_t)dp[k] * dp[k] - tmp_w[k]; 
-      tmp_dp[k] = my_sqrt(tmp_dp[k]); // avoid overflow
+      tmp_w[k] = ((int64_t)py[dimp][k] - (int64_t)Hr[dimp][dimp] * xHat[level][k]); 
+      if (tmp_w[k] < 0)
+        tmp_w[k] *= -1;
       ped[k] += tmp_w[k];
     }
+
+    // int64_t tmp_dp[64] = {INT64_MAX};
+    // for (int k = 0; k < k_size; k++) { // ped = radius - tmp_w
+    //   tmp_dp[k] = (int64_t)dp[k] - tmp_w[k]; 
+    //   if (tmp_dp[k] < 0)
+    //     tmp_dp[k] = 0;
+    //   ped[k] += tmp_w[k];
+    // }
 
     int8_t sorted_idx[64];
     sort_ped(k_size, ped, sorted_idx); // sort for finding kbest
@@ -321,46 +318,26 @@ void my_SDA_kbest (int numLayer,
     if (layers == numLayer - 1) { // handle the anser
       printf("Ans: (%d, %dj), (%d, %dj)\n", xHat[3][sorted_idx[0]], xHat[1][sorted_idx[0]], xHat[2][sorted_idx[0]], xHat[0][sorted_idx[0]]);
       
-      int l0_idx = map_iq_to_qam_idx(xRangeLen, xRange[order / 2 - 1], xHat[3][sorted_idx[0]], xHat[1][sorted_idx[0]]);
-      int l1_idx = map_iq_to_qam_idx(xRangeLen, xRange[order / 2 - 1], xHat[2][sorted_idx[0]], xHat[0][sorted_idx[0]]);
-      switch (order)
-      {
-      case 2:
-        l0_idx = QPSK[l0_idx];
-        l1_idx = QPSK[l1_idx];
-        break;
-      case 4:
-        l0_idx = QAM16[l0_idx];
-        l1_idx = QAM16[l1_idx];
-        break;
-      case 6:
-        l0_idx = QAM64[l0_idx];
-        l1_idx = QAM64[l1_idx];
-        break;
-      default:
-        break;
-      }
-      printf("Ans: (%d, %d)\n", l0_idx, l1_idx);
-      for (int i = 0; i < order; i++) {
-        if (l0_idx & 1)
-          printf("-100, ");
-        else
-          printf(" 100, ");
-        l0_idx >>= 1;
-      }
-      printf("\n");
-      for (int i = 0; i < order; i++) {
-        if (l1_idx & 1)
-          printf("-100, ");
-        else
-          printf(" 100, ");
-        l1_idx >>= 1;
-      }
-      
-      break;
+      // int l0_idx = map_iq_to_qam_idx(xRangeLen, xRange[order / 2 - 1], xHat[3][sorted_idx[0]], xHat[1][sorted_idx[0]]);
+      // int l1_idx = map_iq_to_qam_idx(xRangeLen, xRange[order / 2 - 1], xHat[2][sorted_idx[0]], xHat[0][sorted_idx[0]]);
+      // switch (order) {
+      //   case 2:
+      //     l0_idx = QPSK[l0_idx];
+      //     l1_idx = QPSK[l1_idx];
+      //     break;
+      //   case 4:
+      //     l0_idx = QAM16[l0_idx];
+      //     l1_idx = QAM16[l1_idx];
+      //     break;
+      //   case 6:
+      //     l0_idx = QAM64[l0_idx];
+      //     l1_idx = QAM64[l1_idx];
+      //     break;
+      //   default:
+      //     break;
+      // }
+      // break;
     }
-
-    k_size = k_best_cur * xRangeLen; // set the new k_size
     
     int16_t xHat_tmp[4][64] = {0};
     int64_t ped_tmp[64] = {0};
@@ -383,9 +360,10 @@ void my_SDA_kbest (int numLayer,
         // set the new ped
         ped[xRangeLen * k + j] = ped_tmp[sorted_idx[k]];
         // set the new dp (radius)
-        dp[xRangeLen * k + j] = tmp_dp[sorted_idx[k]]; 
+        // dp[xRangeLen * k + j] = tmp_dp[sorted_idx[k]]; 
       }
     }
+    k_size = k_best_cur * xRangeLen; // set the new k_size
     level++;
     dim--;
     dimp--;
@@ -398,15 +376,16 @@ int main() {
   int numAnt = 2;
   int k_best = 8;
   int8_t order = 4;
-
-  c16_t ch0 = {359, -10};
-  c16_t ch1 = {16, 24};
-  c16_t ch2 = {6, 16};
-  c16_t ch3 = {362, -2};
-
+  
+  c16_t ch[] = {
+    {334, -30},
+    {40, -6},
+    {-6, -4},
+    {378, 0},
+  };
   c16_t data_in[2] = {{591, -544}, {-223, 93}};
 
-  my_SDA_kbest(2 * numLayer, 2 * numAnt, ch0, ch1, ch2, ch3, data_in, order, k_best);
+  my_SDA_kbest(2 * numLayer, 2 * numAnt, ch, data_in, order, k_best);
   
   return 0;
 }
